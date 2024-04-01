@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TelecomCat {
+public class TelecomGatewayAPI {
     private String token;
     private final HeaderGroup headerGroup = new HeaderGroup() {
         {
@@ -40,7 +40,7 @@ public class TelecomCat {
     CloseableHttpClient httpclient = HttpClients.custom().setDefaultRequestConfig(requestConfig).build();
 
 
-    public TelecomCat() {
+    public TelecomGatewayAPI() {
         setHostIp(hostIp);
     }
 
@@ -48,12 +48,22 @@ public class TelecomCat {
         headerGroup.setHeader(new BasicHeader(name, value));
     }
 
+    /**
+     * 设置主机ip地址
+     *
+     * @param hostIp 示例 "192.168.1.1"
+     */
     public void setHostIp(String hostIp) {
         this.hostIp = hostIp;
         setHeader("Host", hostIp);
         url = "http://" + hostIp;
     }
 
+    /**
+     * 获取网关状态
+     *
+     * @return 网关状态
+     */
     public GWStatus getGWStatus() {
         HttpGet request = new HttpGet(url + "/cgi-bin/luci/admin/settings/gwstatus");
         request.setHeaders(headerGroup.getHeaders());
@@ -65,6 +75,11 @@ public class TelecomCat {
         }
     }
 
+    /**
+     * 获取网关信息
+     *
+     * @return 网关信息
+     */
     public GWInfo getGWInfo() {
         HttpGet request = new HttpGet(url + "/cgi-bin/luci/admin/settings/gwinfo?get=all");
         request.setHeaders(headerGroup.getHeaders());
@@ -76,6 +91,11 @@ public class TelecomCat {
         }
     }
 
+    /**
+     * 获取端口映射列表
+     *
+     * @return 端口映射列表
+     */
     public PMDisplay getPMDisplay() {
         HttpGet request = new HttpGet(url + "/cgi-bin/luci/admin/settings/pmDisplay");
         request.setHeaders(headerGroup.getHeaders());
@@ -87,6 +107,11 @@ public class TelecomCat {
         }
     }
 
+    /**
+     * 获取所有信息
+     *
+     * @return 所有信息
+     */
     public AllInfo getAllInfo() {
         HttpGet request = new HttpGet(url + "/cgi-bin/luci/admin/allInfo");
         request.setHeaders(headerGroup.getHeaders());
@@ -98,30 +123,63 @@ public class TelecomCat {
         }
     }
 
+    /**
+     * 增加端口映射规则
+     *
+     * @param name     规则名
+     * @param ip       目标Ip地址
+     * @param protocol 协议
+     * @param exPort   外部端口
+     * @param inPort   内部端口
+     */
     public void addSingle(String name, String ip, Protocol protocol, int exPort, int inPort) {
         pmSetSingle("add", name, ip, protocol.name(), exPort, inPort);
     }
 
+    /**
+     * 启用端口映射规则
+     *
+     * @param name 规则名
+     */
     public void enableSingle(String name) {
         pmSetSingle("enable", name, null, null, 0, 0);
     }
 
+    /**
+     * 禁用端口映射规则
+     *
+     * @param name 规则名
+     */
     public void disableSingle(String name) {
         pmSetSingle("disable", name, null, null, 0, 0);
     }
 
+    /**
+     * 移除端口映射规则
+     *
+     * @param name 规则名
+     */
     public void removeSingle(String name) {
         pmSetSingle("del", name, null, null, 0, 0);
     }
 
+    /**
+     * 移除所有端口映射规则
+     */
     public void realDeleteAll() {
         pmSetAll("del");
     }
 
+    /**
+     * 禁用所有端口映射规则
+     */
     public void realDisableAll() {
         pmSetAll("disable");
     }
 
+    /**
+     * 启用所有端口映射规则
+     */
     public void realEnableAll() {
         pmSetAll("enable");
     }
@@ -191,8 +249,7 @@ public class TelecomCat {
         request.setEntity(new UrlEncodedFormEntity(form));
         try (CloseableHttpResponse response = httpclient.execute(request)) {
             HttpEntity responseEntity = response.getEntity();
-            System.out.println(GsonManager.fromJson(EntityUtils.toString(responseEntity), JsonObject.class).get("retVal").getAsInt());
-            if (GsonManager.fromJson(EntityUtils.toString(responseEntity), JsonObject.class).get("retVal").getAsInt() != 0)
+            if (GsonManager.fromJson(EntityUtils.toString(responseEntity), JsonObject.class).get("retVal").getAsInt() ==-1)
                 throw new RuntimeException("操作执行失败: " + op);
         } catch (ProtocolException | IOException e) {
             throw new RuntimeException(e);

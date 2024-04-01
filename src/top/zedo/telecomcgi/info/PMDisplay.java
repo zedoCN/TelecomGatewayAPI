@@ -8,9 +8,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PMDisplay implements JsonDeserializer<PMDisplay> {
+    /**
+     * 规则数
+     */
     public int count;
+    /**
+     * 网关ip
+     */
     public String lanIp;
+    /**
+     * 子网掩码
+     */
     public String mask;
+    /**
+     * 端口映射规则列表
+     */
     public List<PMRule> pmRule;
 
     @Override
@@ -22,15 +34,5 @@ public class PMDisplay implements JsonDeserializer<PMDisplay> {
             pmDisplay.pmRule.add(GsonManager.fromJson(jsonObject.get("pmRule" + (i + 1)), PMRule.class));
         }
         return pmDisplay;
-    }
-
-    @Override
-    public String toString() {
-        return "PMDisplay{" +
-                "count=" + count +
-                ", lanIp='" + lanIp + '\'' +
-                ", mask='" + mask + '\'' +
-                ", pmRule=" + pmRule +
-                '}';
     }
 }

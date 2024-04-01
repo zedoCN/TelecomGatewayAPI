@@ -2,15 +2,15 @@ package top.zedo.telecomcgi.info;
 
 public class GWStatus {
     /**
-     * cpu占用0-100
+     * cpu占用 范围:0-100
      */
     public int cpuUsed;
     /**
-     * 数字电视
+     * iTV业务
      */
     public boolean itv;
     /**
-     * 存储设备
+     * 存储设备数
      */
     public int scount;
     /**
@@ -22,15 +22,15 @@ public class GWStatus {
      */
     public long upTime;
     /**
-     * 语言功能
+     * 电话业务
      */
     public boolean voip;
     /**
-     * 连接数
+     * 有线设备数
      */
     public int wcount;
     /**
-     * 存储设备数
+     * 无线设备数
      */
     public int wlcount;
 }

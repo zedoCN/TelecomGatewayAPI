@@ -1,22 +1,28 @@
 package top.zedo.telecomcgi.info;
 
 public class PMRule {
-   public String client;
-   public String desp;
-   public int enable;
-   public int exPort;
-   public int inPort;
-   public String protocol;
-
-   @Override
-   public String toString() {
-      return "PMRule{" +
-              "client='" + client + '\'' +
-              ", desp='" + desp + '\'' +
-              ", enable=" + enable +
-              ", exPort=" + exPort +
-              ", inPort=" + inPort +
-              ", protocol='" + protocol + '\'' +
-              '}';
-   }
+    /**
+     * 目标Ip地址
+     */
+    public String client;
+    /**
+     * 名称
+     */
+    public String desp;
+    /**
+     * 使能
+     */
+    public int enable;
+    /**
+     * 外部端口
+     */
+    public int exPort;
+    /**
+     * 内部端口
+     */
+    public int inPort;
+    /**
+     * 协议
+     */
+    public String protocol;
 }

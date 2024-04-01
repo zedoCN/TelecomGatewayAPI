@@ -1,2 +1,2 @@
-# TelecomCGIManager
-电信光猫网管管理
+# TelecomGatewayAPI
+电信网关API
