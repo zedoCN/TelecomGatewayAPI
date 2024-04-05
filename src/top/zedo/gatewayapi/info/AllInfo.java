@@ -1,7 +1,7 @@
-package top.zedo.telecomcgi.info;
+package top.zedo.gatewayapi.info;
 
 import com.google.gson.*;
-import top.zedo.telecomcgi.GsonManager;
+import top.zedo.gatewayapi.GsonManager;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

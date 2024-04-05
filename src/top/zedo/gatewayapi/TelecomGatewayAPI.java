@@ -1,4 +1,4 @@
-package top.zedo.telecomcgi;
+package top.zedo.gatewayapi;
 
 import com.google.gson.JsonObject;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -15,10 +15,10 @@ import org.apache.hc.core5.http.ProtocolException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.message.BasicHeader;
 import org.apache.hc.core5.http.message.HeaderGroup;
-import top.zedo.telecomcgi.info.AllInfo;
-import top.zedo.telecomcgi.info.GWInfo;
-import top.zedo.telecomcgi.info.GWStatus;
-import top.zedo.telecomcgi.info.PMDisplay;
+import top.zedo.gatewayapi.info.AllInfo;
+import top.zedo.gatewayapi.info.GWInfo;
+import top.zedo.gatewayapi.info.GWStatus;
+import top.zedo.gatewayapi.info.PMRules;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,10 +35,8 @@ public class TelecomGatewayAPI {
     };
     private String hostIp = "192.168.1.1";
     private String url;
-    private String sysAuth;
-    RequestConfig requestConfig = RequestConfig.custom().setRedirectsEnabled(false).build();
-    CloseableHttpClient httpclient = HttpClients.custom().setDefaultRequestConfig(requestConfig).build();
-
+    private final RequestConfig requestConfig = RequestConfig.custom().setRedirectsEnabled(false).build();
+    private final CloseableHttpClient httpclient = HttpClients.custom().setDefaultRequestConfig(requestConfig).build();
 
     public TelecomGatewayAPI() {
         setHostIp(hostIp);
@@ -51,7 +49,7 @@ public class TelecomGatewayAPI {
     /**
      * 设置主机ip地址
      *
-     * @param hostIp 示例 "192.168.1.1"
+     * @param hostIp 默认为 "192.168.1.1"
      */
     public void setHostIp(String hostIp) {
         this.hostIp = hostIp;
@@ -96,12 +94,12 @@ public class TelecomGatewayAPI {
      *
      * @return 端口映射列表
      */
-    public PMDisplay getPMDisplay() {
+    public PMRules getPMRules() {
         HttpGet request = new HttpGet(url + "/cgi-bin/luci/admin/settings/pmDisplay");
         request.setHeaders(headerGroup.getHeaders());
         try (CloseableHttpResponse response = httpclient.execute(request)) {
             HttpEntity responseEntity = response.getEntity();
-            return GsonManager.fromJson(EntityUtils.toString(responseEntity), PMDisplay.class);
+            return GsonManager.fromJson(EntityUtils.toString(responseEntity), PMRules.class);
         } catch (ProtocolException | IOException e) {
             throw new RuntimeException(e);
         }
@@ -132,7 +130,7 @@ public class TelecomGatewayAPI {
      * @param exPort   外部端口
      * @param inPort   内部端口
      */
-    public void addSingle(String name, String ip, Protocol protocol, int exPort, int inPort) {
+    public void addPMRule(String name, String ip, Protocol protocol, int exPort, int inPort) {
         pmSetSingle("add", name, ip, protocol.name(), exPort, inPort);
     }
 
@@ -141,7 +139,7 @@ public class TelecomGatewayAPI {
      *
      * @param name 规则名
      */
-    public void enableSingle(String name) {
+    public void enablePMRule(String name) {
         pmSetSingle("enable", name, null, null, 0, 0);
     }
 
@@ -150,7 +148,7 @@ public class TelecomGatewayAPI {
      *
      * @param name 规则名
      */
-    public void disableSingle(String name) {
+    public void disablePMRule(String name) {
         pmSetSingle("disable", name, null, null, 0, 0);
     }
 
@@ -159,28 +157,28 @@ public class TelecomGatewayAPI {
      *
      * @param name 规则名
      */
-    public void removeSingle(String name) {
+    public void removePMRule(String name) {
         pmSetSingle("del", name, null, null, 0, 0);
     }
 
     /**
      * 移除所有端口映射规则
      */
-    public void realDeleteAll() {
+    public void removeAllPMRules() {
         pmSetAll("del");
     }
 
     /**
      * 禁用所有端口映射规则
      */
-    public void realDisableAll() {
+    public void disableAllPMRules() {
         pmSetAll("disable");
     }
 
     /**
      * 启用所有端口映射规则
      */
-    public void realEnableAll() {
+    public void enableAllRules() {
         pmSetAll("enable");
     }
 
@@ -249,7 +247,7 @@ public class TelecomGatewayAPI {
         request.setEntity(new UrlEncodedFormEntity(form));
         try (CloseableHttpResponse response = httpclient.execute(request)) {
             HttpEntity responseEntity = response.getEntity();
-            if (GsonManager.fromJson(EntityUtils.toString(responseEntity), JsonObject.class).get("retVal").getAsInt() ==-1)
+            if (GsonManager.fromJson(EntityUtils.toString(responseEntity), JsonObject.class).get("retVal").getAsInt() == -1)
                 throw new RuntimeException("操作执行失败: " + op);
         } catch (ProtocolException | IOException e) {
             throw new RuntimeException(e);
@@ -274,7 +272,7 @@ public class TelecomGatewayAPI {
 
         try (CloseableHttpResponse response = httpclient.execute(request)) {
             if (response.getCode() == 302) {
-                sysAuth = response.getFirstHeader("Set-Cookie").getValue().split(";")[0].split("=")[1];
+                String sysAuth = response.getFirstHeader("Set-Cookie").getValue().split(";")[0].split("=")[1];
                 setHeader("Cookie", "sysauth=" + sysAuth);
             }
         } catch (IOException e) {

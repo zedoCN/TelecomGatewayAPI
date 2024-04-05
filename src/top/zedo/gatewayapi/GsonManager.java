@@ -1,10 +1,10 @@
-package top.zedo.telecomcgi;
+package top.zedo.gatewayapi;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import top.zedo.telecomcgi.info.AllInfo;
-import top.zedo.telecomcgi.info.PMDisplay;
+import top.zedo.gatewayapi.info.AllInfo;
+import top.zedo.gatewayapi.info.PMRules;
 
 public class GsonManager {
     private static final Gson gson;
@@ -23,7 +23,7 @@ public class GsonManager {
 
     static {
         gson = new GsonBuilder()
-                .registerTypeAdapter(PMDisplay.class, new PMDisplay())
+                .registerTypeAdapter(PMRules.class, new PMRules())
                 .registerTypeAdapter(AllInfo.class, new AllInfo())
                 .setPrettyPrinting()
                 .create();

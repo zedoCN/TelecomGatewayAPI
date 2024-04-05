@@ -1,4 +1,4 @@
-package top.zedo.telecomcgi.info;
+package top.zedo.gatewayapi.info;
 
 public class GWStatus {
     /**
