@@ -1,4 +1,5 @@
-package top.zedo.telecomcgi;
+/*
+package top.zedo.gatewayapi;
 
 import com.aliyun.sdk.service.alidns20150109.models.DescribeDomainRecordsResponse;
 import com.aliyun.sdk.service.alidns20150109.models.DescribeDomainRecordsResponseBody;
@@ -66,4 +67,4 @@ public class Main {
         SimpleDateFormat sdf = new SimpleDateFormat("M月d号 H时m分s秒");
         return sdf.format(new Date());
     }
-}
+}*/
