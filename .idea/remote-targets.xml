@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteTargetsManager">
+    <targets>
+      <target name="本地服务器" type="ssh/sftp" uuid="b538c733-7e96-4c16-a3b0-504778a2d3eb">
+        <config>
+          <option name="projectRootOnTarget" value="C:/Worker/java" />
+          <option name="serverName" value="本地服务器" />
+          <option name="useRsync" value="true" />
+        </config>
+        <ContributedStateBase type="JavaLanguageRuntime">
+          <config>
+            <option name="homePath" value="C:/Program Files/Java/graalvm-jdk-22+36.1" />
+            <option name="javaVersionString" value="22" />
+          </config>
+        </ContributedStateBase>
+      </target>
+    </targets>
+  </component>
+</project>

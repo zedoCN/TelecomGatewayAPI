@@ -1,81 +1,83 @@
-package top.zedo.gatewayapi.info;
+package top.zedo.gatewayapi.info
 
-import com.google.gson.*;
-import top.zedo.gatewayapi.GsonManager;
+import com.google.gson.*
+import top.zedo.gatewayapi.GsonManager
+import java.lang.reflect.Type
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-
-public class AllInfo implements JsonDeserializer<AllInfo> {
+data class AllInfo(
     /**
      * 无线上行速度
      */
-    public long tWlUp;
+    var tWlUp: Long = 0,
+
+
     /**
      * 无线下行速度
      */
-    public long tWlDown;
+    var tWlDown: Long = 0,
 
     /**
      * 有线上行速度
      */
-    public long tWUp;
+    var tWUp: Long = 0,
+
     /**
      * 有线下行速度
      */
-    public long tWDown;
+    var tWDown: Long = 0,
+
     /**
      * 联网时间
      */
-    public long wanUpTime;
+    var wanUpTime: Long = 0,
+
     /**
      * 存储设备数
      */
-    public int scount;
+    var scount: Int = 0,
+
     /**
      * 电话业务
      */
-    public boolean voip;
+    var voip: Boolean = false,
+
     /**
      * 广域网连接状态 可能是"CONNECTED" 注: 判断得转全大写
      */
-    public String wanConnect;
+    var wanConnect: String? = null,
+
     /**
      * 有线设备数
      */
-    public int wcount;
+    var wcount: Int = 0,
+
     /**
      * 无线设备数
      */
-    public int wlcount;
+    var wlcount: Int = 0,
+
     /**
      * iTV业务
      */
-    public boolean itv;
+    var itv: Boolean = false,
+
     /**
      * 有线设备列表
      */
-    public List<deviceInfo> pc;
+    var pc: MutableList<deviceInfo> = ArrayList<deviceInfo>(),
+
     /**
      * 无线设备列表
      */
-    public List<deviceInfo> wifi;
-
-
-    @Override
-    public AllInfo deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        AllInfo allInfo = new Gson().fromJson(json, AllInfo.class);
-        JsonObject jsonObject = json.getAsJsonObject();
-        allInfo.pc = new ArrayList<>();
-        for (int i = 0; i < allInfo.wcount; i++) {
-            allInfo.pc.add(GsonManager.fromJson(jsonObject.get("pc" + (i + 1)), deviceInfo.class));
-        }
-
-        allInfo.wifi = new ArrayList<>();
-        for (int i = 0; i < allInfo.wlcount; i++) {
-            allInfo.wifi.add(GsonManager.fromJson(jsonObject.get("wifi" + (i + 1)), deviceInfo.class));
-        }
-        return allInfo;
+    var wifi: MutableList<deviceInfo> = ArrayList<deviceInfo>()
+) : JsonDeserializer<AllInfo?> {
+    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): AllInfo {
+        val allInfo = Gson().fromJson<AllInfo>(json, AllInfo::class.java)
+        val jo = json.getAsJsonObject()
+        for (i in 0 until allInfo.wcount)
+            allInfo.pc.add(GsonManager.fromJson<deviceInfo>(jo.get("pc" + (i + 1)), deviceInfo::class.java))
+        for (i in 0 until allInfo.wlcount)
+            allInfo.wifi.add(GsonManager.fromJson<deviceInfo>(jo.get("wifi" + (i + 1)), deviceInfo::class.java))
+        return allInfo
     }
 }

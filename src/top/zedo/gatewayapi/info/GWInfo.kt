@@ -1,47 +1,48 @@
+package top.zedo.gatewayapi.info
 
-package top.zedo.gatewayapi.info;
-
-public class GWInfo {
+data class GWInfo(
     /**
      * 设备类型
      */
-    public String DevType;
+    var DevType: String? = null,
     /**
      * wifi开关状态
      */
-    public boolean wifiOnOff;
-    public String LANIP;
-    public String LANIPv6;
-    public String MAC;
+    var wifiOnOff: Boolean = false,
+    var LANIP: String? = null,
+    var LANIPv6: String? = null,
+    var MAC: String? = null,
     /**
      * 设备型号
      */
-    public String ProductCls;
+    var ProductCls: String? = null,
+
     /**
      * 序列号
      */
-    public String ProductSN;
+    var ProductSN: String? = null,
     /**
      * 版本号
      */
-    public String SWVer;
+    var SWVer: String? = null,
     /**
      * 厂商
      */
-    public String Vendor;
+    var Vendor: String? = null,
     /**
      * 广域网IP
      */
-    public String WANIP;
+    var WANIP: String? = null,
+
     /**
      * 广域网IPv6
      */
-    public String WANIPv6;
-    public String ssid2g;
-    public String ssid5g;
+    var WANIPv6: String? = null,
+    var ssid2g: String? = null,
+    var ssid5g: String? = null,
+
     /**
      * 上网账号
      */
-    public String wanAcnt;
-
-}
+    var wanAcnt: String? = null,
+)

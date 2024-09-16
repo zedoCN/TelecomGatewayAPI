@@ -1,40 +1,39 @@
 // YApi QuickType插件生成，具体参考文档:https://plugins.jetbrains.com/plugin/18847-yapi-quicktype/documentation
+package top.zedo.gatewayapi.info
 
-package top.zedo.gatewayapi.info;
-
-public class deviceInfo {
+data class deviceInfo (
     /**
      * 上行速度
      */
-    public long upSpeed;
+    var upSpeed: Long = 0,
     /**
      * ip地址
      */
-    public String ip;
+    var ip: String? = null,
     /**
      * 在线时长
      */
-    public long onlineTime;
+    var onlineTime: Long = 0,
     /**
      * 型号
      */
-    public String model;
+    var model: String? = null,
     /**
      * 下行速度
      */
-    public long downSpeed;
+    var downSpeed: Long = 0,
+
     /**
      * 设备名称
      */
-    public String devName;
+    var devName: String? = null,
     /**
      * 类型
      */
-    public String type;
+    var type: String? = null,
     /**
      * 厂商
      */
-    public String brand;
+    var brand: String? = null
 
-
-}
+)

@@ -1,125 +1,62 @@
-package top.zedo.gatewayapi;
+@file:Suppress("unused")
 
-import com.google.gson.JsonObject;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.config.RequestConfig;
-import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.NameValuePair;
-import org.apache.hc.core5.http.ParseException;
-import org.apache.hc.core5.http.ProtocolException;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.message.BasicHeader;
-import org.apache.hc.core5.http.message.HeaderGroup;
-import top.zedo.gatewayapi.info.AllInfo;
-import top.zedo.gatewayapi.info.GWInfo;
-import top.zedo.gatewayapi.info.GWStatus;
-import top.zedo.gatewayapi.info.PMRules;
+package top.zedo.gatewayapi
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
+import okhttp3.FormBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import top.zedo.gatewayapi.info.AllInfo
+import top.zedo.gatewayapi.info.GWInfo
+import top.zedo.gatewayapi.info.GWStatus
+import top.zedo.gatewayapi.info.PMRules
 
-public class TelecomGatewayAPI {
-    private String token;
-    private final HeaderGroup headerGroup = new HeaderGroup() {
-        {
-            addHeader(new BasicHeader("Content-Type", "application/x-www-form-urlencoded"));
-        }
-    };
-    private String hostIp = "192.168.1.1";
-    private String url;
-    private final RequestConfig requestConfig = RequestConfig.custom().setRedirectsEnabled(false).build();
-    private final CloseableHttpClient httpclient = HttpClients.custom().setDefaultRequestConfig(requestConfig).build();
+private val client = OkHttpClient.Builder()
+    .followRedirects(false)
+    .build()
+private val gson = GsonBuilder()
+    .registerTypeAdapter(PMRules::class.java, PMRules())
+    .registerTypeAdapter(AllInfo::class.java, AllInfo())
+    .setPrettyPrinting()
+    .setLenient()
+    .create()
+private val pattern = ".+([a-z0-9]{32}).+".toRegex(RegexOption.DOT_MATCHES_ALL)
 
-    public TelecomGatewayAPI() {
-        setHostIp(hostIp);
-    }
+fun <T> fromJson(element: JsonElement, classOfT: Class<T>): T {
+    return gson.fromJson(element, classOfT);
+}
 
-    private void setHeader(String name, String value) {
-        headerGroup.setHeader(new BasicHeader(name, value));
-    }
 
-    /**
-     * 设置主机ip地址
-     *
-     * @param hostIp 默认为 "192.168.1.1"
-     */
-    public void setHostIp(String hostIp) {
-        this.hostIp = hostIp;
-        setHeader("Host", hostIp);
-        url = "http://" + hostIp;
-    }
+class TelecomGatewayAPI(
+    val username: String,
+    val password: String,
+    var baseUrl: String = "http://192.168.1.1"
+) {
+    var cookie = ""
+    var token = ""
 
     /**
      * 获取网关状态
-     *
-     * @return 网关状态
      */
-    public GWStatus getGWStatus() {
-        HttpGet request = new HttpGet(url + "/cgi-bin/luci/admin/settings/gwstatus");
-        request.setHeaders(headerGroup.getHeaders());
-        try (CloseableHttpResponse response = httpclient.execute(request)) {
-            HttpEntity responseEntity = response.getEntity();
-            return GsonManager.fromJson(EntityUtils.toString(responseEntity), GWStatus.class);
-        } catch (ProtocolException | IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    fun getGWStatus() = requestGet<GWStatus>("/cgi-bin/luci/admin/settings/gwstatus")
 
     /**
      * 获取网关信息
-     *
-     * @return 网关信息
      */
-    public GWInfo getGWInfo() {
-        HttpGet request = new HttpGet(url + "/cgi-bin/luci/admin/settings/gwinfo?get=all");
-        request.setHeaders(headerGroup.getHeaders());
-        try (CloseableHttpResponse response = httpclient.execute(request)) {
-            HttpEntity responseEntity = response.getEntity();
-            return GsonManager.fromJson(EntityUtils.toString(responseEntity), GWInfo.class);
-        } catch (ProtocolException | IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    fun getGWInfo() = requestGet<GWInfo>("/cgi-bin/luci/admin/settings/gwinfo?get=all")
 
     /**
      * 获取端口映射列表
-     *
-     * @return 端口映射列表
      */
-    public PMRules getPMRules() {
-        HttpGet request = new HttpGet(url + "/cgi-bin/luci/admin/settings/pmDisplay");
-        request.setHeaders(headerGroup.getHeaders());
-        try (CloseableHttpResponse response = httpclient.execute(request)) {
-            HttpEntity responseEntity = response.getEntity();
-            return GsonManager.fromJson(EntityUtils.toString(responseEntity), PMRules.class);
-        } catch (ProtocolException | IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    fun getPMRules() = requestGet<PMRules>("/cgi-bin/luci/admin/settings/pmDisplay")
 
     /**
      * 获取所有信息
-     *
-     * @return 所有信息
      */
-    public AllInfo getAllInfo() {
-        HttpGet request = new HttpGet(url + "/cgi-bin/luci/admin/allInfo");
-        request.setHeaders(headerGroup.getHeaders());
-        try (CloseableHttpResponse response = httpclient.execute(request)) {
-            HttpEntity responseEntity = response.getEntity();
-            return GsonManager.fromJson(EntityUtils.toString(responseEntity), AllInfo.class);
-        } catch (ProtocolException | IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    fun getAllInfo() = requestGet<AllInfo>("/cgi-bin/luci/admin/allInfo")
+
 
     /**
      * 增加端口映射规则
@@ -130,173 +67,136 @@ public class TelecomGatewayAPI {
      * @param exPort   外部端口
      * @param inPort   内部端口
      */
-    public void addPMRule(String name, String ip, Protocol protocol, int exPort, int inPort) {
-        pmSetSingle("add", name, ip, protocol.name(), exPort, inPort);
-    }
+    fun addPMRule(name: String, ip: String, protocol: Protocol, exPort: Int, inPort: Int) =
+        pmSetSingle("add", name, ip, protocol, exPort, inPort)
 
     /**
      * 启用端口映射规则
      *
      * @param name 规则名
      */
-    public void enablePMRule(String name) {
-        pmSetSingle("enable", name, null, null, 0, 0);
-    }
+    fun enablePMRule(name: String) = pmSetSingle("enable", name)
 
     /**
      * 禁用端口映射规则
      *
      * @param name 规则名
      */
-    public void disablePMRule(String name) {
-        pmSetSingle("disable", name, null, null, 0, 0);
-    }
+    fun disablePMRule(name: String) = pmSetSingle("disable", name)
 
     /**
      * 移除端口映射规则
      *
      * @param name 规则名
      */
-    public void removePMRule(String name) {
-        pmSetSingle("del", name, null, null, 0, 0);
-    }
+    fun removePMRule(name: String) = pmSetSingle("del", name)
+
 
     /**
      * 移除所有端口映射规则
      */
-    public void removeAllPMRules() {
-        pmSetAll("del");
-    }
+
+    fun removeAllPMRules() = pmSetAll("del")
 
     /**
      * 禁用所有端口映射规则
      */
-    public void disableAllPMRules() {
-        pmSetAll("disable");
-    }
+
+    fun disableAllPMRules() = pmSetAll("disable")
 
     /**
      * 启用所有端口映射规则
      */
-    public void enableAllRules() {
-        pmSetAll("enable");
+
+    fun enableAllRules() = pmSetAll("enable")
+
+    private fun pmSetAll(op: String) =
+        requestPost<String>("/cgi-bin/luci/admin/settings/pmSetAll", FormBody.Builder().add("op", op))
+
+    private fun pmSetSingle(
+        op: String,
+        srvname: String,
+        client: String? = null,
+        protocol: Protocol? = null,
+        exPort: Int? = null,
+        inPort: Int? = null,
+    ) {
+        val form = FormBody.Builder()
+            .add("op", op)
+            .add("srvname", srvname)
+        if (client != null) form.add("client", client)
+        if (protocol != null) form.add("protocol", protocol.name)
+        if (exPort != null) form.add("exPort", exPort.toString())
+        if (inPort != null) form.add("inPort", inPort.toString())
+        requestPost<String>("/cgi-bin/luci/admin/settings/pmSetSingle", form)
+    }
+
+    /**
+     * 登录
+     */
+    fun login() {
+        val cook = requestInner(
+            url = "/cgi-bin/luci",
+            body = FormBody.Builder().add("username", username).add("psd", password)
+        ) {
+            check(it.code == 302) {
+                println(it)
+                "登陆失败"
+            }
+            it.header("Set-Cookie")!!.split(";")[0].split("=")[1]
+        }.getOrThrow()
+        cookie = "sysauth=$cook"
+        token = requestGet<String>("/cgi-bin/luci").getOrThrow().let {
+            pattern.matchAt1(it)!!
+        }
     }
 
     /**
      * 登出
      */
-    public void logout() {
-        HttpPost request = new HttpPost(url + "/cgi-bin/luci/admin/logout");
-        List<NameValuePair> form = new ArrayList<>();
-        form.add(new BasicHeader("token", token));
-        request.setHeaders(headerGroup.getHeaders());
-        request.setEntity(new UrlEncodedFormEntity(form));
-        try {
-            httpclient.execute(request);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    fun logout() = requestPost<String>("/cgi-bin/luci/admin/logout")
 
     /**
      * 重启
      */
-    public void reboot() {
-        HttpPost request = new HttpPost(url + "/cgi-bin/luci/admin/reboot");
-        List<NameValuePair> form = new ArrayList<>();
-        form.add(new BasicHeader("token", token));
-        request.setHeaders(headerGroup.getHeaders());
-        request.setEntity(new UrlEncodedFormEntity(form));
-        try {
-            httpclient.execute(request);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    fun reboot() = requestPost<String>("/cgi-bin/luci/admin/reboot")
+
+    private inline fun <reified R> requestGet(url: String): Result<R> {
+        return requestInner(url, null) {
+            val bodyString = it.body.string()
+            check(it.code == 200) { bodyString }
+            if (R::class.java == String::class.java) bodyString as R
+            else gson.fromJson(bodyString, R::class.java)
         }
     }
 
-    private void pmSetAll(String op) {
-        HttpPost request = new HttpPost(url + "/cgi-bin/luci/admin/settings/pmSetAll");
-        List<NameValuePair> form = new ArrayList<>();
-        form.add(new BasicHeader("token", token));
-        form.add(new BasicHeader("op", op));
-        request.setHeaders(headerGroup.getHeaders());
-        request.setEntity(new UrlEncodedFormEntity(form));
-        try {
-            httpclient.execute(request);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    private inline fun <reified R> requestPost(url: String, body: FormBody.Builder = FormBody.Builder()): Result<R> {
+        return requestInner(url, body) { response ->
+            val bodyString = response.body.string()
+            check(response.code == 200) { bodyString }
+            if (R::class.java == String::class.java) bodyString as R
+            else gson.fromJson(bodyString, R::class.java)
         }
     }
 
-    private void pmSetSingle(String op, String srvname, String client, String protocol, int exPort, int inPort) {
-        HttpPost request = new HttpPost(url + "/cgi-bin/luci/admin/settings/pmSetSingle");
-        List<NameValuePair> form = new ArrayList<>();
-        form.add(new BasicHeader("token", token));
-        form.add(new BasicHeader("op", op));
-        if (srvname != null)
-            form.add(new BasicHeader("srvname", srvname));
-        if (client != null)
-            form.add(new BasicHeader("client", client));
-        if (protocol != null)
-            form.add(new BasicHeader("protocol", protocol));
-        if (exPort != 0)
-            form.add(new BasicHeader("exPort", exPort));
-        if (inPort != 0)
-            form.add(new BasicHeader("inPort", inPort));
-        request.setHeaders(headerGroup.getHeaders());
-        request.setEntity(new UrlEncodedFormEntity(form));
-        try (CloseableHttpResponse response = httpclient.execute(request)) {
-            HttpEntity responseEntity = response.getEntity();
-            if (GsonManager.fromJson(EntityUtils.toString(responseEntity), JsonObject.class).get("retVal").getAsInt() == -1)
-                throw new RuntimeException("操作执行失败: " + op);
-        } catch (ProtocolException | IOException e) {
-            throw new RuntimeException(e);
+    private inline fun <reified R> requestInner(
+        url: String,
+        body: FormBody.Builder? = null,
+        onResult: (Response) -> R
+    ): Result<R> {
+        if (token.isNotEmpty()) body?.add("token", token)
+        val request = Request.Builder()
+            .url("$baseUrl$url")
+            .header("Cookie", cookie)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .let { if (body == null) it.get() else it.post(body.build()) }
+            .build()
+        return runCatching {
+            client.newCall(request).execute().use(onResult)
         }
     }
 
-    /**
-     * 登录
-     *
-     * @param username 用户名 通常为 "useradmin"
-     * @param password 密码 光猫后面有写
-     */
-    public void login(String username, String password) {
-        List<NameValuePair> form = new ArrayList<>();
-        form.add(new BasicHeader("username", username));
-        form.add(new BasicHeader("psd", password));
-
-        HttpPost request = new HttpPost(url + "/cgi-bin/luci");
-        request.setHeaders(headerGroup.getHeaders());
-        request.setEntity(new UrlEncodedFormEntity(form));
-
-
-        try (CloseableHttpResponse response = httpclient.execute(request)) {
-            if (response.getCode() == 302) {
-                String sysAuth = response.getFirstHeader("Set-Cookie").getValue().split(";")[0].split("=")[1];
-                setHeader("Cookie", "sysauth=" + sysAuth);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        getToken();
-    }
-
-    private void getToken() {
-        Pattern pattern = Pattern.compile("[a-z0-9]{32}");
-        HttpGet request = new HttpGet(url + "/cgi-bin/luci/");
-        request.setHeaders(headerGroup.getHeaders());
-        try (CloseableHttpResponse response = httpclient.execute(request)) {
-            if (response.getCode() == 200) {
-                String html = EntityUtils.toString(response.getEntity());
-                Matcher matcher = pattern.matcher(html);
-                if (matcher.find()) {
-                    token = matcher.group();
-                    return;
-                }
-            }
-            throw new RuntimeException("获取Token失败");
-        } catch (IOException | ParseException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }
+
+private fun Regex.matchAt1(text: String) = matchEntire(text)?.groupValues?.getOrNull(1)
+

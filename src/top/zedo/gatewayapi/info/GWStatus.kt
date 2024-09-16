@@ -1,36 +1,38 @@
-package top.zedo.gatewayapi.info;
+package top.zedo.gatewayapi.info
 
-public class GWStatus {
+data class GWStatus(
     /**
      * cpu占用 范围:0-100
      */
-    public int cpuUsed;
+    var cpuUsed: Int = 0,
+
     /**
      * iTV业务
      */
-    public boolean itv;
+    var itv: Boolean = false,
     /**
      * 存储设备数
      */
-    public int scount;
+    var scount: Int = 0,
     /**
      * 运行时间
      */
-    public long sysTime;
+    var sysTime: Long = 0,
     /**
      * 上网时间
      */
-    public long upTime;
+    var upTime: Long = 0,
+
     /**
      * 电话业务
      */
-    public boolean voip;
+    var voip: Boolean = false,
     /**
      * 有线设备数
      */
-    public int wcount;
+    var wcount: Int = 0,
     /**
      * 无线设备数
      */
-    public int wlcount;
-}
+    var wlcount: Int = 0
+)
