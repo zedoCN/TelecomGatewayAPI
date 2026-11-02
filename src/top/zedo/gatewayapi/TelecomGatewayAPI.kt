@@ -11,6 +11,7 @@ import okhttp3.Response
 import top.zedo.gatewayapi.info.AllInfo
 import top.zedo.gatewayapi.info.GWInfo
 import top.zedo.gatewayapi.info.GWStatus
+import top.zedo.gatewayapi.info.PMRule
 import top.zedo.gatewayapi.info.PMRules
 
 private val client = OkHttpClient.Builder()
@@ -69,6 +70,9 @@ class TelecomGatewayAPI(
      */
     fun addPMRule(name: String, ip: String, protocol: Protocol, exPort: Int, inPort: Int) =
         pmSetSingle("add", name, ip, protocol, exPort, inPort)
+
+    /*fun addPMRule(rule: PMRule)=
+        addPMRule(rule.desp,rule.client,rule.protocol,rule.exPort,rule.inPort)*/
 
     /**
      * 启用端口映射规则
